@@ -16,12 +16,12 @@ const handleSignIn = async () => {
     try {
       isSubmitting.value = true
       errorMessage.value = ''
-      
+
       const { isSignedIn, nextStep } = await signIn({
         username: email.value,
         password: password.value,
       })
-      
+
       if (isSignedIn) {
         // Successful login, navigate to home
         router.push('/')
@@ -46,37 +46,47 @@ const handleSignIn = async () => {
     <form @submit.prevent="handleSignIn" class="form">
       <div class="input-group">
         <div class="input-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <rect x="2" y="4" width="20" height="16" rx="2"></rect>
             <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
           </svg>
         </div>
-        <input 
-          type="email" 
-          v-model="email" 
-          placeholder="Email address" 
-          required 
-        />
+        <input type="email" v-model="email" placeholder="Email address" required />
       </div>
 
       <div class="input-group">
         <div class="input-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
             <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
           </svg>
         </div>
-        <input 
-          type="password" 
-          v-model="password" 
-          placeholder="Password" 
-          required 
-        />
+        <input type="password" v-model="password" placeholder="Password" required />
       </div>
 
       <div class="form-options">
         <label class="checkbox-container">
-          <input type="checkbox" v-model="rememberMe">
+          <input type="checkbox" v-model="rememberMe" />
           <span class="checkmark"></span>
           <span class="label-text">Remember me</span>
         </label>
@@ -89,7 +99,18 @@ const handleSignIn = async () => {
 
       <button type="submit" class="btn-primary" :disabled="isSubmitting">
         {{ isSubmitting ? 'Signing In...' : 'Sign In' }}
-        <svg v-if="!isSubmitting" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg
+          v-if="!isSubmitting"
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
           <path d="M5 12h14"></path>
           <path d="m12 5 7 7-7 7"></path>
         </svg>
@@ -103,7 +124,18 @@ const handleSignIn = async () => {
       <div class="guest-link-container">
         <router-link to="/" class="guest-link">
           Continue as Guest
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 4px;">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            style="margin-left: 4px"
+          >
             <path d="M5 12h14"></path>
             <path d="m12 5 7 7-7 7"></path>
           </svg>
@@ -127,11 +159,11 @@ const handleSignIn = async () => {
 }
 
 .meet {
-  color: #6292FF;
+  color: #6292ff;
 }
 
 .one {
-  color: #30C5FF;
+  color: #30c5ff;
 }
 
 .subtitle {
@@ -162,8 +194,8 @@ const handleSignIn = async () => {
   pointer-events: none;
 }
 
-input[type="email"],
-input[type="password"] {
+input[type='email'],
+input[type='password'] {
   padding-left: 44px;
 }
 
@@ -209,7 +241,7 @@ input[type="password"] {
 }
 
 .checkmark:after {
-  content: "";
+  content: '';
   display: none;
   width: 4px;
   height: 8px;

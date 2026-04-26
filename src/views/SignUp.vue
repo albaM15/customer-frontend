@@ -8,25 +8,38 @@ const router = useRouter()
 const fullName = ref('')
 const email = ref('')
 const password = ref('')
+const nativeLanguage = ref('')
+const targetLanguage = ref('')
+const gender = ref('')
+const location = ref('')
 const agreeTerms = ref(false)
 const showPassword = ref(false)
 const errorMessage = ref('')
 const isSubmitting = ref(false)
 
 const handleSignUp = async () => {
-  if (fullName.value && email.value && password.value && agreeTerms.value) {
+  if (fullName.value && email.value && password.value && agreeTerms.value && nativeLanguage.value && gender.value && location.value) {
     try {
       isSubmitting.value = true;
       errorMessage.value = '';
       
+      const userAttributes = {
+        email: email.value,
+        name: fullName.value, // Cognito standard attribute for full name
+        'custom:nativeLanguage': nativeLanguage.value,
+        gender: gender.value,
+        'custom:location': location.value
+      };
+
+      if (targetLanguage.value) {
+        userAttributes['custom:targetLanguage'] = targetLanguage.value;
+      }
+
       const { isSignUpComplete, nextStep } = await signUp({
         username: email.value,
         password: password.value,
         options: {
-          userAttributes: {
-            email: email.value,
-            name: fullName.value // Cognito standard attribute for full name
-          }
+          userAttributes
         }
       });
       
@@ -77,6 +90,65 @@ const handleSignUp = async () => {
           type="email" 
           v-model="email" 
           placeholder="Email Address" 
+          required 
+        />
+      </div>
+
+      <div class="input-group">
+        <div class="input-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+        </div>
+        <input 
+          type="text" 
+          v-model="nativeLanguage" 
+          placeholder="Native Language" 
+          required 
+        />
+      </div>
+
+      <div class="input-group">
+        <div class="input-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+        </div>
+        <input 
+          type="text" 
+          v-model="targetLanguage" 
+          placeholder="Target Language (Optional)" 
+        />
+      </div>
+
+      <div class="input-group">
+        <div class="input-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+        <select v-model="gender" class="select-input" required>
+          <option value="" disabled selected>Gender</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <div class="input-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+        </div>
+        <input 
+          type="text" 
+          v-model="location" 
+          placeholder="Location" 
           required 
         />
       </div>
@@ -220,8 +292,39 @@ const handleSignUp = async () => {
 
 input[type="text"],
 input[type="email"],
-input[type="password"] {
+input[type="password"],
+.select-input {
   padding-left: 44px;
+}
+
+.select-input {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  padding-left: 44px;
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.3s ease;
+  appearance: none;
+  cursor: pointer;
+}
+
+.select-input:invalid {
+  color: var(--text-secondary);
+}
+
+.select-input option {
+  color: var(--text-primary);
+  background-color: var(--card-bg);
+}
+
+.select-input:focus {
+  border-color: var(--input-focus);
+  box-shadow: 0 0 0 3px rgba(48, 197, 255, 0.1);
 }
 
 input[type="password"] {
