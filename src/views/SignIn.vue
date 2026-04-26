@@ -74,6 +74,16 @@ const handleSignIn = () => {
         <span>Don't have an account? </span>
         <router-link to="/sign-up" class="accent">Sign up</router-link>
       </div>
+
+      <div class="guest-link-container">
+        <router-link to="/" class="guest-link">
+          Continue as Guest
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 4px;">
+            <path d="M5 12h14"></path>
+            <path d="m12 5 7 7-7 7"></path>
+          </svg>
+        </router-link>
+      </div>
     </form>
   </AuthLayout>
 </template>
@@ -202,5 +212,28 @@ input[type="password"] {
   margin-top: 8px;
   font-size: 13px;
   color: var(--text-secondary);
+}
+
+.guest-link-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.guest-link {
+  display: flex;
+  align-items: center;
+  color: var(--text-accent);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.guest-link:hover {
+  opacity: 0.8;
+  transform: translateX(4px);
 }
 </style>
