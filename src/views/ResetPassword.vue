@@ -1,17 +1,39 @@
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { confirmResetPassword } from 'aws-amplify/auth'
 import AuthLayout from './AuthLayout.vue'
 
 const router = useRouter()
+const route = useRoute()
 const password = ref('')
 const confirmPassword = ref('')
+const confirmationCode = ref('')
 const showPassword = ref(false)
+const displayEmail = computed(() => route.query.email || '')
+const errorMessage = ref('')
+const isSubmitting = ref(false)
 
-const handleReset = () => {
-  if (password.value === confirmPassword.value && password.value.length >= 8) {
-    // Simulate successful reset, redirect to login
-    router.push('/')
+const handleReset = async () => {
+  if (password.value === confirmPassword.value && password.value.length >= 8 && confirmationCode.value) {
+    try {
+      isSubmitting.value = true
+      errorMessage.value = ''
+      
+      await confirmResetPassword({
+        username: displayEmail.value,
+        confirmationCode: confirmationCode.value,
+        newPassword: password.value
+      })
+      
+      // Successful reset, redirect to login
+      router.push('/sign-in')
+    } catch (error) {
+      console.error('Error confirming reset password:', error)
+      errorMessage.value = error.message || 'Error resetting password. Please try again.'
+    } finally {
+      isSubmitting.value = false
+    }
   }
 }
 </script>
@@ -25,6 +47,28 @@ const handleReset = () => {
     </div>
 
     <form @submit.prevent="handleReset" class="form">
+      <div class="input-group">
+        <div class="input-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
+            <path d="M7 8h.01"></path>
+            <path d="M12 8h.01"></path>
+            <path d="M17 8h.01"></path>
+            <path d="M7 12h.01"></path>
+            <path d="M12 12h.01"></path>
+            <path d="M17 12h.01"></path>
+            <path d="M7 16h.01"></path>
+            <path d="M12 16h.01"></path>
+            <path d="M17 16h.01"></path>
+          </svg>
+        </div>
+        <input 
+          type="text" 
+          v-model="confirmationCode" 
+          placeholder="Confirmation Code" 
+          required 
+        />
+      </div>
       <div class="input-group">
         <div class="input-icon">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -69,9 +113,13 @@ const handleReset = () => {
         />
       </div>
 
-      <button type="submit" class="btn-primary" :disabled="password !== confirmPassword || password.length < 8">
-        Reset Password
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <div v-if="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+
+      <button type="submit" class="btn-primary" :disabled="password !== confirmPassword || password.length < 8 || !confirmationCode || isSubmitting">
+        {{ isSubmitting ? 'Resetting...' : 'Reset Password' }}
+        <svg v-if="!isSubmitting" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M5 12h14"></path>
           <path d="m12 5 7 7-7 7"></path>
         </svg>
@@ -160,5 +208,15 @@ input {
 .btn-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.error-message {
+  color: #ff6b6b;
+  font-size: 13px;
+  text-align: center;
+  background: rgba(255, 107, 107, 0.1);
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 107, 107, 0.2);
 }
 </style>

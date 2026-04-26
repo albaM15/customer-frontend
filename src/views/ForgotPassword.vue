@@ -1,15 +1,30 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { resetPassword } from 'aws-amplify/auth'
 import AuthLayout from './AuthLayout.vue'
 
 const router = useRouter()
 const email = ref('')
+const errorMessage = ref('')
+const isSubmitting = ref(false)
 
-const handleSendCode = () => {
-  // Simulate sending code
+const handleSendCode = async () => {
   if (email.value) {
-    router.push({ path: '/verify-code', query: { email: email.value } })
+    try {
+      isSubmitting.value = true
+      errorMessage.value = ''
+      
+      const output = await resetPassword({ username: email.value })
+      
+      // Navigate to reset password page passing the email
+      router.push({ path: '/reset-password', query: { email: email.value } })
+    } catch (error) {
+      console.error('Error sending reset code:', error)
+      errorMessage.value = error.message || 'Error sending code. Please check your email.'
+    } finally {
+      isSubmitting.value = false
+    }
   }
 }
 </script>
@@ -38,9 +53,13 @@ const handleSendCode = () => {
         />
       </div>
 
-      <button type="submit" class="btn-primary">
-        Send Code
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <div v-if="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+
+      <button type="submit" class="btn-primary" :disabled="isSubmitting">
+        {{ isSubmitting ? 'Sending...' : 'Send Code' }}
+        <svg v-if="!isSubmitting" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M5 12h14"></path>
           <path d="m12 5 7 7-7 7"></path>
         </svg>
@@ -48,7 +67,7 @@ const handleSendCode = () => {
 
       <div class="footer-links">
         <span>Remember your password? </span>
-        <a href="#" class="accent">Log in</a>
+        <router-link to="/sign-in" class="accent">Log in</router-link>
       </div>
     </form>
   </AuthLayout>
@@ -118,5 +137,20 @@ input {
   margin-top: 16px;
   font-size: 13px;
   color: var(--text-secondary);
+}
+
+.error-message {
+  color: #ff6b6b;
+  font-size: 13px;
+  text-align: center;
+  background: rgba(255, 107, 107, 0.1);
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 107, 107, 0.2);
+}
+
+.btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 </style>

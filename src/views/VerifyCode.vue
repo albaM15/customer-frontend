@@ -1,11 +1,12 @@
 <script setup>
 import { ref, watch, nextTick, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { confirmSignUp, resendSignUpCode } from 'aws-amplify/auth'
 import AuthLayout from './AuthLayout.vue'
 
 const router = useRouter()
 const route = useRoute()
-const displayEmail = computed(() => route.query.email || 'your email address')
+const displayEmail = computed(() => route.query.email || '')
 const code = ref(['', '', '', '', '', ''])
 const inputRefs = ref([])
 
@@ -23,10 +24,52 @@ const handleKeydown = (e, index) => {
   }
 }
 
-const handleVerify = () => {
+const isSubmitting = ref(false)
+const errorMessage = ref('')
+const successMessage = ref('')
+
+const handleVerify = async () => {
   const fullCode = code.value.join('')
-  if (fullCode.length === 6) {
-    router.push('/reset-password')
+  if (fullCode.length === 6 && displayEmail.value) {
+    try {
+      isSubmitting.value = true
+      errorMessage.value = ''
+      successMessage.value = ''
+      
+      const { isSignUpComplete, nextStep } = await confirmSignUp({
+        username: displayEmail.value,
+        confirmationCode: fullCode
+      })
+      
+      if (isSignUpComplete) {
+        // Automatically redirect to Sign In to let them log in
+        router.push('/sign-in')
+      }
+    } catch (error) {
+      console.error('Error confirming sign up:', error)
+      errorMessage.value = error.message || 'Error verifying code. Please try again.'
+    } finally {
+      isSubmitting.value = false
+    }
+  }
+}
+
+const handleResendCode = async (e) => {
+  e.preventDefault()
+  if (!displayEmail.value) return
+  
+  try {
+    errorMessage.value = ''
+    successMessage.value = ''
+    
+    await resendSignUpCode({
+      username: displayEmail.value
+    })
+    
+    successMessage.value = 'A new code has been sent to your email.'
+  } catch (error) {
+    console.error('Error resending code:', error)
+    errorMessage.value = error.message || 'Error resending code.'
   }
 }
 </script>
@@ -76,9 +119,17 @@ const handleVerify = () => {
         />
       </div>
 
-      <button type="submit" class="btn-primary" :disabled="code.join('').length !== 6">
-        Verify & Proceed
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <div v-if="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+      
+      <div v-if="successMessage" class="success-message">
+        {{ successMessage }}
+      </div>
+
+      <button type="submit" class="btn-primary" :disabled="code.join('').length !== 6 || isSubmitting">
+        {{ isSubmitting ? 'Verifying...' : 'Verify & Proceed' }}
+        <svg v-if="!isSubmitting" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M5 12h14"></path>
           <path d="m12 5 7 7-7 7"></path>
         </svg>
@@ -86,7 +137,7 @@ const handleVerify = () => {
 
       <div class="footer-links">
         <span>Didn't receive code? </span>
-        <a href="#" class="accent">Resend code</a>
+        <a href="#" class="accent" @click="handleResendCode">Resend code</a>
       </div>
     </form>
   </AuthLayout>
@@ -188,5 +239,25 @@ const handleVerify = () => {
   text-align: center;
   font-size: 13px;
   color: var(--text-secondary);
+}
+
+.error-message {
+  color: #ff6b6b;
+  font-size: 13px;
+  text-align: center;
+  background: rgba(255, 107, 107, 0.1);
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 107, 107, 0.2);
+}
+
+.success-message {
+  color: #4cd137;
+  font-size: 13px;
+  text-align: center;
+  background: rgba(76, 209, 55, 0.1);
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(76, 209, 55, 0.2);
 }
 </style>

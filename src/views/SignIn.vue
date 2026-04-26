@@ -1,17 +1,38 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { signIn } from 'aws-amplify/auth'
 import AuthLayout from './AuthLayout.vue'
 
 const router = useRouter()
 const email = ref('')
 const password = ref('')
 const rememberMe = ref(false)
+const errorMessage = ref('')
+const isSubmitting = ref(false)
 
-const handleSignIn = () => {
-  // Doing nothing for now, as requested.
-  // In the future this would authenticate and go to the home page.
-  console.log('Sign in clicked')
+const handleSignIn = async () => {
+  if (email.value && password.value) {
+    try {
+      isSubmitting.value = true
+      errorMessage.value = ''
+      
+      const { isSignedIn, nextStep } = await signIn({
+        username: email.value,
+        password: password.value,
+      })
+      
+      if (isSignedIn) {
+        // Successful login, navigate to home
+        router.push('/')
+      }
+    } catch (error) {
+      console.error('Error signing in:', error)
+      errorMessage.value = error.message || 'Invalid email or password.'
+    } finally {
+      isSubmitting.value = false
+    }
+  }
 }
 </script>
 
@@ -62,9 +83,13 @@ const handleSignIn = () => {
         <router-link to="/forgot-password" class="forgot-link">Forgot password?</router-link>
       </div>
 
-      <button type="submit" class="btn-primary">
-        Sign In
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <div v-if="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+
+      <button type="submit" class="btn-primary" :disabled="isSubmitting">
+        {{ isSubmitting ? 'Signing In...' : 'Sign In' }}
+        <svg v-if="!isSubmitting" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M5 12h14"></path>
           <path d="m12 5 7 7-7 7"></path>
         </svg>
@@ -235,5 +260,20 @@ input[type="password"] {
 .guest-link:hover {
   opacity: 0.8;
   transform: translateX(4px);
+}
+
+.error-message {
+  color: #ff6b6b;
+  font-size: 13px;
+  text-align: center;
+  background: rgba(255, 107, 107, 0.1);
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 107, 107, 0.2);
+}
+
+.btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 </style>
