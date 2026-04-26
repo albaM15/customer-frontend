@@ -1,0 +1,117 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg-dark: #0A1024;
+  --bg-gradient-start: #0B132B;
+  --bg-gradient-end: #0A1024;
+  
+  --card-bg: #12192B;
+  --card-border: rgba(255, 255, 255, 0.04);
+  --input-bg: #161D31;
+  --input-border: rgba(255, 255, 255, 0.06);
+  --input-focus: rgba(48, 197, 255, 0.4);
+  
+  --text-primary: #FFFFFF;
+  --text-secondary: #8B94A6;
+  --text-accent: #30C5FF;
+  
+  --btn-gradient-start: #5C61FF;
+  --btn-gradient-end: #30C5FF;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: radial-gradient(circle at 30% 100%, rgba(92, 97, 255, 0.08) 0%, transparent 50%),
+              radial-gradient(circle at 80% 0%, rgba(48, 197, 255, 0.05) 0%, transparent 40%),
+              linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-dark) 100%);
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Common Input Styles */
+input {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+input::placeholder {
+  color: var(--text-secondary);
+}
+
+input:focus {
+  border-color: var(--input-focus);
+  box-shadow: 0 0 0 3px rgba(48, 197, 255, 0.1);
+}
+
+/* Common Button Styles */
+button {
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  border: none;
+  outline: none;
+}
+
+.btn-primary {
+  width: 100%;
+  background: linear-gradient(90deg, var(--btn-gradient-start) 0%, var(--btn-gradient-end) 100%);
+  color: white;
+  padding: 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  transition: opacity 0.3s ease, transform 0.1s ease;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+/* Links */
+a {
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.3s ease;
+}
+
+a.accent {
+  color: var(--text-accent);
+  font-weight: 500;
+}
+
+a:hover {
+  color: var(--text-accent);
+}
