@@ -1,75 +1,14 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { signUp } from 'aws-amplify/auth'
 import AuthLayout from './AuthLayout.vue'
 
 const router = useRouter()
-const languages = ref([]);
-const countries = ref([]);
-
-const parseCSV = (str) => {
-  const result = [];
-  let row = [];
-  let col = '';
-  let inQuotes = false;
-  for (let i = 0; i < str.length; i++) {
-    let char = str[i];
-    if (char === '"' && str[i+1] === '"') {
-      col += '"'; i++;
-    } else if (char === '"') {
-      inQuotes = !inQuotes;
-    } else if (char === ',' && !inQuotes) {
-      row.push(col); col = '';
-    } else if ((char === '\n' || char === '\r') && !inQuotes) {
-      if (char === '\r' && str[i+1] === '\n') i++;
-      row.push(col);
-      if (row.length > 1 || row[0] !== '') result.push(row);
-      row = []; col = '';
-    } else {
-      col += char;
-    }
-  }
-  if (col !== '' || row.length > 0) {
-    row.push(col);
-    if (row.length > 1 || row[0] !== '') result.push(row);
-  }
-  return result;
-};
-
-onMounted(async () => {
-  try {
-    const [countryRes, langRes] = await Promise.all([
-      fetch('/country.csv'),
-      fetch('/language.csv')
-    ]);
-    
-    if (!countryRes.ok || !langRes.ok) throw new Error('Failed to fetch CSVs');
-    
-    const countryText = await countryRes.text();
-    const langText = await langRes.text();
-    
-    const countryData = parseCSV(countryText);
-    countries.value = countryData.slice(1).map(row => row[1]).filter(Boolean).sort((a, b) => a.localeCompare(b));
-    
-    const langData = parseCSV(langText);
-    languages.value = langData.slice(1).map(row => row[1]).filter(Boolean).sort((a, b) => a.localeCompare(b));
-    
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    // Fallback in case of API failure
-    countries.value = ['United States', 'United Kingdom', 'Canada', 'Australia']; 
-    languages.value = ['English', 'Spanish', 'French', 'German'];
-  }
-});
 
 const fullName = ref('')
 const email = ref('')
 const password = ref('')
-const nativeLanguage = ref('')
-const targetLanguage = ref('')
-const gender = ref('')
-const location = ref('')
 const agreeTerms = ref(false)
 const showPassword = ref(false)
 const errorMessage = ref('')
@@ -80,10 +19,7 @@ const handleSignUp = async () => {
     fullName.value &&
     email.value &&
     password.value &&
-    agreeTerms.value &&
-    nativeLanguage.value &&
-    gender.value &&
-    location.value
+    agreeTerms.value
   ) {
     try {
       isSubmitting.value = true
@@ -92,13 +28,6 @@ const handleSignUp = async () => {
       const userAttributes = {
         email: email.value,
         name: fullName.value, // Cognito standard attribute for full name
-        'custom:nativeLanguage': nativeLanguage.value,
-        gender: gender.value,
-        'custom:location': location.value,
-      }
-
-      if (targetLanguage.value) {
-        userAttributes['custom:targetLanguage'] = targetLanguage.value
       }
 
       const { isSignUpComplete, nextStep } = await signUp({
@@ -168,102 +97,6 @@ const handleSignUp = async () => {
           </svg>
         </div>
         <input type="email" v-model="email" placeholder="Email Address" required />
-      </div>
-
-      <div class="input-group">
-        <div class="input-icon">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="2" y1="12" x2="22" y2="12"></line>
-            <path
-              d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
-            ></path>
-          </svg>
-        </div>
-        <select v-model="nativeLanguage" class="select-input" required>
-          <option value="" disabled selected>Native Language</option>
-          <option v-for="lang in languages" :key="lang" :value="lang">{{ lang }}</option>
-        </select>
-      </div>
-
-      <div class="input-group">
-        <div class="input-icon">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-          </svg>
-        </div>
-        <select v-model="targetLanguage" class="select-input">
-          <option value="" disabled selected>Target Language (Optional)</option>
-          <option v-for="lang in languages" :key="lang" :value="lang">{{ lang }}</option>
-        </select>
-      </div>
-
-      <div class="input-group">
-        <div class="input-icon">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
-          </svg>
-        </div>
-        <select v-model="gender" class="select-input" required>
-          <option value="" disabled selected>Gender</option>
-          <option value="male">Male</option>
-          <option value="female">Female</option>
-          <option value="other">Other</option>
-        </select>
-      </div>
-
-      <div class="input-group">
-        <div class="input-icon">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-            <circle cx="12" cy="10" r="3"></circle>
-          </svg>
-        </div>
-        <select v-model="location" class="select-input" required>
-          <option value="" disabled selected>Location</option>
-          <option v-for="country in countries" :key="country" :value="country">{{ country }}</option>
-        </select>
       </div>
 
       <div class="input-group">

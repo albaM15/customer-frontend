@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { signIn } from 'aws-amplify/auth'
+import { signIn, fetchAuthSession } from 'aws-amplify/auth'
 import AuthLayout from './AuthLayout.vue'
 
 const router = useRouter()
@@ -23,8 +23,27 @@ const handleSignIn = async () => {
       })
 
       if (isSignedIn) {
-        // Successful login, navigate to home
-        router.push('/')
+        try {
+          const session = await fetchAuthSession()
+          const token = session.tokens?.idToken?.toString() || session.tokens?.accessToken?.toString()
+          
+          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+          const response = await fetch(`${apiUrl}/users/profile`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          })
+
+          if (response.status === 404 || !response.ok) {
+            router.push('/create-profile')
+          } else {
+            router.push('/')
+          }
+        } catch (error) {
+          console.error('Error fetching user profile:', error)
+          // Fallback to create-profile if we can't verify
+          router.push('/create-profile')
+        }
       }
     } catch (error) {
       console.error('Error signing in:', error)
