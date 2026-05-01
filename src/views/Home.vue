@@ -16,7 +16,7 @@ const navigateToSignIn = () => {
         <button @click="navigateToSignIn" class="btn-outline">Sign In</button>
       </div>
     </header>
-    
+
     <main class="main-content">
       <h2>Welcome to MeetOne</h2>
       <p>This is the public home page. You don't need to log in to see this content!</p>
@@ -50,11 +50,11 @@ const navigateToSignIn = () => {
 }
 
 .meet {
-  color: #6292FF;
+  color: #6292ff;
 }
 
 .one {
-  color: #30C5FF;
+  color: #30c5ff;
 }
 
 .btn-outline {
