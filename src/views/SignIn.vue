@@ -10,6 +10,31 @@ const password = ref('')
 const rememberMe = ref(false)
 const errorMessage = ref('')
 const isSubmitting = ref(false)
+const showPassword = ref(false)
+
+const checkProfileAndRedirect = async () => {
+  try {
+    const session = await fetchAuthSession()
+    const token = session.tokens?.idToken?.toString() || session.tokens?.accessToken?.toString()
+    
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+    const response = await fetch(`${apiUrl}/users/profile`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    if (response.status === 404 || !response.ok) {
+      router.push('/create-profile')
+    } else {
+      router.push('/')
+    }
+  } catch (error) {
+    console.error('Error fetching user profile:', error)
+    // Fallback to create-profile if we can't verify
+    router.push('/create-profile')
+  }
+}
 
 const handleSignIn = async () => {
   if (email.value && password.value) {
@@ -23,31 +48,15 @@ const handleSignIn = async () => {
       })
 
       if (isSignedIn) {
-        try {
-          const session = await fetchAuthSession()
-          const token = session.tokens?.idToken?.toString() || session.tokens?.accessToken?.toString()
-          
-          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
-          const response = await fetch(`${apiUrl}/users/profile`, {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          })
-
-          if (response.status === 404 || !response.ok) {
-            router.push('/create-profile')
-          } else {
-            router.push('/')
-          }
-        } catch (error) {
-          console.error('Error fetching user profile:', error)
-          // Fallback to create-profile if we can't verify
-          router.push('/create-profile')
-        }
+        await checkProfileAndRedirect()
       }
     } catch (error) {
       console.error('Error signing in:', error)
-      errorMessage.value = error.message || 'Invalid email or password.'
+      if (error.name === 'UserAlreadyAuthenticatedException') {
+        await checkProfileAndRedirect()
+      } else {
+        errorMessage.value = error.message || 'Invalid email or password.'
+      }
     } finally {
       isSubmitting.value = false
     }
@@ -100,7 +109,48 @@ const handleSignIn = async () => {
             <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
           </svg>
         </div>
-        <input type="password" v-model="password" placeholder="Password" required />
+        <input
+          :type="showPassword ? 'text' : 'password'"
+          v-model="password"
+          placeholder="Password"
+          required
+        />
+        <button type="button" class="toggle-password" @click="showPassword = !showPassword">
+          <svg
+            v-if="!showPassword"
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
+            <path
+              d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"
+            ></path>
+            <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+            <line x1="2" x2="22" y1="2" y2="22"></line>
+          </svg>
+          <svg
+            v-else
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </button>
       </div>
 
       <div class="form-options">
@@ -213,9 +263,32 @@ const handleSignIn = async () => {
   pointer-events: none;
 }
 
+.toggle-password {
+  position: absolute;
+  right: 16px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+}
+
+.toggle-password:hover {
+  color: var(--text-primary);
+}
+
+input[type='text'],
 input[type='email'],
 input[type='password'] {
   padding-left: 44px;
+}
+
+input[type='password'],
+input[type='text'] {
+  padding-right: 44px;
 }
 
 .form-options {
