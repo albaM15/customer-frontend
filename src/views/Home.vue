@@ -73,18 +73,13 @@ const getCountryName = (id) => {
 }
 
 const handleStartCall = () => {
-  webrtc.connectToSignaling(profile.value)
+  // Navigate to /call immediately — Call.vue will start the connection
+  router.push('/call')
 }
 
 const handleSettings = () => {
   // Config preferences
 }
-
-watch(() => webrtc.isConnected, (newVal) => {
-  if (newVal) {
-    router.push('/call')
-  }
-})
 </script>
 
 <template>
