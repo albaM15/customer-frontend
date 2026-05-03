@@ -29,7 +29,7 @@ const handleCreateProfile = async () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': token
         },
         body: JSON.stringify({
           nativeLanguage: nativeLanguage.value,
