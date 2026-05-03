@@ -13,7 +13,7 @@ const targetLanguage = ref('')
 const handleGuestSubmit = () => {
   if (guestName.value && nativeLanguage.value && targetLanguage.value) {
     const guestProfile = {
-      userId: `gst_${Math.random().toString(36).substring(2, 10)}`,
+      userId: `gst_${crypto.randomUUID()}`,
       name: guestName.value,
       nativeLanguage: nativeLanguage.value,
       targetLanguage: targetLanguage.value,

@@ -36,13 +36,21 @@ onMounted(async () => {
       const session = await fetchAuthSession()
       if (session.tokens) {
         const token = session.tokens?.idToken?.toString() || session.tokens?.accessToken?.toString()
+        // Extract the Cognito sub (user ID) from the token payload
+        const idTokenPayload = session.tokens?.idToken?.payload
+        const cognitoSub = idTokenPayload?.sub
+
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
         const response = await fetch(`${apiUrl}/users/profile`, {
           headers: { 'Authorization': `Bearer ${token}` }
         })
         if (response.ok) {
           const data = await response.json()
-          if (data) profile.value = data
+          if (data) {
+            // Ensure the userId has the correct usr_ prefix
+            data.userId = `usr_${cognitoSub || crypto.randomUUID()}`
+            profile.value = data
+          }
         }
       }
     } catch (error) {

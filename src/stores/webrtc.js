@@ -46,8 +46,8 @@ export const useWebRTCStore = defineStore('webrtc', () => {
         return
       }
 
-      // Add userId to URL if necessary.
-      const userId = profile.userId || `usr_${Math.random().toString(36).substring(2, 9)}`
+      // userId already comes with the correct prefix (gst_ or usr_) from the profile
+      const userId = profile.userId
       
       const connectionUrl = `${wsUrl}?userId=${userId}`
       console.log('Connecting to WebSocket:', connectionUrl)
