@@ -56,19 +56,19 @@ onMounted(async () => {
 })
 
 const getLanguageName = (id) => {
-  if (!id) return 'Cualquiera'
-  const lang = languages.find(l => l.id === id)
+  if (!id || id === 'any') return 'Cualquiera'
+  const lang = languages.find(l => l.id === id || l.id.toLowerCase() === id.toLowerCase() || l.language.toLowerCase() === id.toLowerCase())
   return lang ? lang.language : id
 }
 
 const getLanguageCode = (id) => {
-  if (!id) return 'ANY'
+  if (!id || id === 'any') return 'ANY'
   return id.toUpperCase()
 }
 
 const getCountryName = (id) => {
-  if (!id) return 'Cualquiera'
-  const country = countries.find(c => c.id === id)
+  if (!id || id === 'anywhere') return 'Cualquiera'
+  const country = countries.find(c => c.id === id || c.id.toLowerCase() === id.toLowerCase() || c.country.toLowerCase() === id.toLowerCase())
   return country ? country.country : id
 }
 
@@ -160,7 +160,7 @@ watch(() => webrtc.isConnected, (newVal) => {
             <h3 class="card-title">MI PERFIL</h3>
             <div class="card-row">
               <span class="label">Nativo</span>
-              <div class="badge-blue">{{ getLanguageCode(profile.nativeLanguage) }}</div>
+              <div class="badge-blue">{{ getLanguageName(profile.nativeLanguage) }}</div>
             </div>
             <div class="card-row">
               <span class="label">Ubicación</span>
@@ -172,7 +172,7 @@ watch(() => webrtc.isConnected, (newVal) => {
             <h3 class="card-title">BUSCANDO</h3>
             <div class="card-row">
               <span class="label">Idioma</span>
-              <div class="badge-cyan">{{ getLanguageCode(profile.targetLanguage) }}</div>
+              <div class="badge-cyan">{{ getLanguageName(profile.targetLanguage) }}</div>
             </div>
             <div class="card-row">
               <span class="label">Región</span>
