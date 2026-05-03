@@ -196,12 +196,12 @@ const handleSignUp = async () => {
 
       <div class="footer-links">
         <span>Already have an account? </span>
-        <router-link to="/sign-in" class="accent">Log in</router-link>
+        <router-link to="/" class="accent">Log in</router-link>
       </div>
 
       <div class="guest-link-container">
-        <router-link to="/" class="guest-link">
-          Continue as Guest
+        <router-link to="/guest-profile" class="guest-link">
+          Entrar como invitado
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"

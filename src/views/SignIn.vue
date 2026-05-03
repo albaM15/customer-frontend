@@ -27,7 +27,7 @@ const checkProfileAndRedirect = async () => {
     if (response.status === 404 || !response.ok) {
       router.push('/create-profile')
     } else {
-      router.push('/')
+      router.push('/discover')
     }
   } catch (error) {
     console.error('Error fetching user profile:', error)
@@ -191,8 +191,8 @@ const handleSignIn = async () => {
       </div>
 
       <div class="guest-link-container">
-        <router-link to="/" class="guest-link">
-          Continue as Guest
+        <router-link to="/guest-profile" class="guest-link">
+          Entrar como invitado
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"

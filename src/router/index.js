@@ -4,12 +4,22 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/',
+      path: '/discover',
       name: 'home',
       component: () => import('../views/Home.vue'),
     },
     {
-      path: '/sign-in',
+      path: '/guest-profile',
+      name: 'guest-profile',
+      component: () => import('../views/GuestProfile.vue'),
+    },
+    {
+      path: '/call',
+      name: 'call',
+      component: () => import('../views/Call.vue'),
+    },
+    {
+      path: '/',
       name: 'sign-in',
       component: () => import('../views/SignIn.vue'),
     },

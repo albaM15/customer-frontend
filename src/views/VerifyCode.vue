@@ -43,7 +43,7 @@ const handleVerify = async () => {
       
       if (isSignUpComplete) {
         // Automatically redirect to Sign In to let them log in
-        router.push('/sign-in')
+        router.push('/')
       }
     } catch (error) {
       console.error('Error confirming sign up:', error)

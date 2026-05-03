@@ -43,7 +43,7 @@ const handleCreateProfile = async () => {
         throw new Error('Failed to create profile')
       }
 
-      router.push('/')
+      router.push('/discover')
     } catch (error) {
       console.error('Error creating profile:', error)
       errorMessage.value = error.message || 'Error creating profile. Please try again.'
