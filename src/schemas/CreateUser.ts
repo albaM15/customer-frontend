@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { languages } from '../constants/Languages'
 import { countries } from '../constants/Countries'
 
-const CreateUserSchema = z.object({
+export const CreateUserSchema = z.object({
   name: z.string().min(1).max(100),
   nativeLanguage: z.string().refine((v) => languages.some((lang) => lang.id === v), {
     message: 'Invalid native language',

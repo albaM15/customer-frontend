@@ -8,7 +8,7 @@ import { countries } from '../constants/Countries'
 
 const router = useRouter()
 const webrtc = useWebRTCStore()
-
+const API_URL = import.meta.env.VITE_API_URL
 const profile = ref({
   name: '',
   nativeLanguage: '',
@@ -40,9 +40,8 @@ onMounted(async () => {
         const idTokenPayload = session.tokens?.idToken?.payload
         const cognitoSub = idTokenPayload?.sub
 
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
-        const response = await fetch(`${apiUrl}/users/profile`, {
-          headers: { 'Authorization': token }
+        const response = await fetch(`${API_URL}/users/profile`, {
+          headers: { 'Authorization': `Bearer ${token}` }
         })
         if (response.ok) {
           const data = await response.json()

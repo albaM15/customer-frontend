@@ -11,16 +11,16 @@ const rememberMe = ref(false)
 const errorMessage = ref('')
 const isSubmitting = ref(false)
 const showPassword = ref(false)
+const API_URL = import.meta.env.VITE_API_URL
 
 const checkProfileAndRedirect = async () => {
   try {
     const session = await fetchAuthSession()
     const token = session.tokens?.idToken?.toString() || session.tokens?.accessToken?.toString()
-    
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
-    const response = await fetch(`${apiUrl}/users/profile`, {
+
+    const response = await fetch(`${API_URL}/users/profile`, {
       headers: {
-        'Authorization': token
+        'Authorization': `Bearer ${token}`
       }
     })
 

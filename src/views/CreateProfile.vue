@@ -5,18 +5,36 @@ import { fetchAuthSession } from 'aws-amplify/auth'
 import AuthLayout from './AuthLayout.vue'
 import { languages } from '../constants/Languages'
 import { countries } from '../constants/Countries'
+import { CreateUserSchema } from '../schemas/CreateUser'
 
 const router = useRouter()
 
+const name = ref('')
 const nativeLanguage = ref('')
 const targetLanguage = ref('')
 const gender = ref('')
 const location = ref('')
 const errorMessage = ref('')
 const isSubmitting = ref(false)
+const API_URL = import.meta.env.VITE_API_URL
 
 const handleCreateProfile = async () => {
-  if (nativeLanguage.value && gender.value && location.value) {
+  // Validate required fields using the schema before sending to backend
+  const parsed = CreateUserSchema.safeParse({
+    name: name.value,
+    nativeLanguage: nativeLanguage.value,
+    targetLanguage: targetLanguage.value || '',
+    gender: gender.value,
+    location: location.value,
+  })
+
+  if (!parsed.success) {
+    const firstErr = parsed.error.issues[0]
+    errorMessage.value = firstErr ? firstErr.message : 'Invalid profile data.'
+    return
+  }
+
+  if (nativeLanguage.value && gender.value && location.value && name.value) {
     try {
       isSubmitting.value = true
       errorMessage.value = ''
@@ -24,14 +42,14 @@ const handleCreateProfile = async () => {
       const session = await fetchAuthSession()
       const token = session.tokens?.idToken?.toString() || session.tokens?.accessToken?.toString()
 
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
-      const response = await fetch(`${apiUrl}/users/profile`, {
+      const response = await fetch(`${API_URL}/users/profile`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': token
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
+          name: name.value,
           nativeLanguage: nativeLanguage.value,
           targetLanguage: targetLanguage.value || undefined,
           gender: gender.value,
@@ -63,6 +81,16 @@ const handleCreateProfile = async () => {
     </div>
 
     <form @submit.prevent="handleCreateProfile" class="form">
+      <div class="input-group">
+        <div class="input-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+        <input type="text" v-model="name" placeholder="Full name" required />
+      </div>
+
       <div class="input-group">
         <div class="input-icon">
           <svg
