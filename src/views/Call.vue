@@ -1,20 +1,15 @@
 <script setup>
 import { ref, onMounted, computed, onUnmounted, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
-import { fetchAuthSession } from 'aws-amplify/auth'
 import { useWebRTCStore } from '../stores/webrtc'
+import { useProfileStore } from '../stores/profile'
 import { languages } from '../constants/Languages'
 import { countries } from '../constants/Countries'
 
 const router = useRouter()
 const webrtc = useWebRTCStore()
-const API_URL = import.meta.env.VITE_API_URL
-const profile = ref({
-  name: '',
-  nativeLanguage: '',
-  targetLanguage: '',
-  location: ''
-})
+const profileStore = useProfileStore()
+const profile = computed(() => profileStore.profile)
 
 const isMuted = ref(false)
 const isVideoOff = ref(false)
@@ -23,47 +18,21 @@ const localVideo = ref(null)
 const remoteVideo = ref(null)
 
 onMounted(async () => {
-  // 1. Load profile (guest or authenticated)
-  const storedGuest = localStorage.getItem('guestProfile')
-  if (storedGuest) {
+  if (!profile.value) {
     try {
-      profile.value = JSON.parse(storedGuest)
+      await profileStore.loadProfile()
     } catch (e) {
-      console.error('Error parsing guest profile', e)
-    }
-  } else {
-    try {
-      const session = await fetchAuthSession()
-      if (session.tokens) {
-        const token = session.tokens?.idToken?.toString() || session.tokens?.accessToken?.toString()
-        // Extract the Cognito sub (user ID) from the token payload
-        const idTokenPayload = session.tokens?.idToken?.payload
-        const cognitoSub = idTokenPayload?.sub
-
-        const response = await fetch(`${API_URL}/users/profile`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        })
-        if (response.ok) {
-          const data = await response.json()
-          if (data) {
-            // Ensure the userId has the correct usr_ prefix
-            data.userId = `usr_${cognitoSub || crypto.randomUUID()}`
-            profile.value = data
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching profile:', error)
+      router.push('/discover')
+      return
     }
   }
 
-  // 2. If we don't have a profile at all, redirect back
   if (!profile.value.nativeLanguage && !profile.value.targetLanguage) {
     router.push('/discover')
     return
   }
 
-  // 3. Start searching immediately
+  // 3. Start searching and connect to media
   webrtc.connectToSignaling(profile.value)
 })
 
@@ -124,9 +93,12 @@ const endCall = () => {
 }
 
 // Format helpers
-const myName = computed(() => profile.value.name || 'You')
-const myLanguage = computed(() => getLanguageName(profile.value.nativeLanguage))
-const myTarget = computed(() => getLanguageName(profile.value.targetLanguage))
+const myName = computed(() => {
+  if (!profile.value) return 'You'
+  return profile.value.name || 'You'
+})
+const myLanguage = computed(() => getLanguageName(profile.value?.nativeLanguage))
+const myTarget = computed(() => getLanguageName(profile.value?.targetLanguage))
 
 const peerName = computed(() => webrtc.peerData?.name || webrtc.peerData?.userId || '???')
 const peerLanguage = computed(() => getLanguageName(webrtc.peerData?.nativeLanguage))
