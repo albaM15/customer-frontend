@@ -1,59 +1,37 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { fetchAuthSession } from 'aws-amplify/auth'
 import BottomNav from '../components/BottomNav.vue'
 import { useWebRTCStore } from '../stores/webrtc'
+import { useProfileStore } from '../stores/profile'
+import { socketClient } from '../services/websocket/socketClient'
 import { languages } from '../constants/Languages'
 import { countries } from '../constants/Countries'
 
 const router = useRouter()
 const webrtc = useWebRTCStore()
-const API_URL = import.meta.env.VITE_API_URL
-
-const profile = ref({
-  nativeLanguage: 'es',
-  targetLanguage: 'en',
-    location: 'pe'
-})
+const profileStore = useProfileStore()
 
 onMounted(async () => {
-  // Check if there is a guest profile
-  const storedGuest = localStorage.getItem('guestProfile')
-  if (storedGuest) {
-    try {
-      profile.value = JSON.parse(storedGuest)
-      return // Skip AWS fetch
-    } catch (e) {
-      console.error('Error parsing guest profile', e)
-    }
-  }
-
-  // If no guest profile, attempt to fetch AWS session
   try {
-    const session = await fetchAuthSession()
-    if (!session.tokens) throw new Error('No tokens')
-    
-    const token = session.tokens?.idToken?.toString() || session.tokens?.accessToken?.toString()
-    
-    const response = await fetch(`${API_URL}/users/profile`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-
-    if (response.ok) {
-      const data = await response.json()
-      if (data) profile.value = data
+    await profileStore.loadProfile()
+    if (profileStore.profile?.userId) {
+      socketClient.connect(profileStore.profile.userId)
     } else {
       router.push('/')
     }
   } catch (error) {
-    console.error('Error fetching profile:', error)
-    // If neither guest nor logged in, redirect to login
+    console.error('Error in Home:', error)
     router.push('/')
   }
 })
+
+const profile = computed(() => profileStore.profile || {
+  nativeLanguage: 'es',
+  targetLanguage: 'en',
+  location: 'pe'
+})
+
 
 const getLanguageName = (id) => {
   if (!id || id === 'any') return 'Cualquiera'
