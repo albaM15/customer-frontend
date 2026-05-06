@@ -1,37 +1,29 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { signIn, fetchAuthSession } from 'aws-amplify/auth'
+import { signIn } from 'aws-amplify/auth'
 import AuthLayout from './AuthLayout.vue'
+import { useProfileStore } from '../stores/profile'
 
 const router = useRouter()
+const profileStore = useProfileStore()
 const email = ref('')
 const password = ref('')
 const rememberMe = ref(false)
 const errorMessage = ref('')
 const isSubmitting = ref(false)
 const showPassword = ref(false)
-const API_URL = import.meta.env.VITE_API_URL
 
 const checkProfileAndRedirect = async () => {
   try {
-    const session = await fetchAuthSession()
-    const token = session.tokens?.idToken?.toString() || session.tokens?.accessToken?.toString()
-
-    const response = await fetch(`${API_URL}/users/profile`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-
-    if (response.status === 404 || !response.ok) {
-      router.push('/create-profile')
-    } else {
+    const profile = await profileStore.loadProfile()
+    if (profile) {
       router.push('/discover')
+    } else {
+      router.push('/create-profile')
     }
   } catch (error) {
     console.error('Error fetching user profile:', error)
-    // Fallback to create-profile if we can't verify
     router.push('/create-profile')
   }
 }
@@ -41,6 +33,9 @@ const handleSignIn = async () => {
     try {
       isSubmitting.value = true
       errorMessage.value = ''
+
+      // Clear any previous guest session before signing in
+      profileStore.clearProfile()
 
       const { isSignedIn, nextStep } = await signIn({
         username: email.value,
