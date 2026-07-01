@@ -1,10 +1,11 @@
 <script setup>
+defineOptions({ name: 'CallView' })
+
 import { ref, onMounted, computed, onUnmounted, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { useWebRTCStore } from '../stores/webrtc'
 import { useProfileStore } from '../stores/profile'
 import { languages } from '../constants/Languages'
-import { countries } from '../constants/Countries'
 
 const router = useRouter()
 const webrtc = useWebRTCStore()
@@ -21,14 +22,14 @@ onMounted(async () => {
   if (!profile.value) {
     try {
       await profileStore.loadProfile()
-    } catch (e) {
-      router.push('/discover')
+    } catch {
+      router.replace('/discover')
       return
     }
   }
 
-  if (!profile.value.nativeLanguage && !profile.value.targetLanguage) {
-    router.push('/discover')
+  if (!profile.value?.nativeLanguage || !profile.value?.targetLanguage) {
+    router.replace('/discover')
     return
   }
 
@@ -61,12 +62,6 @@ const getLanguageName = (id) => {
   return lang ? lang.language : id
 }
 
-const getCountryName = (id) => {
-  if (!id || id === 'anywhere' || id === 'us') return 'Anywhere'
-  const country = countries.find(c => c.id === id || c.id.toLowerCase() === id.toLowerCase())
-  return country ? country.country : id
-}
-
 const toggleMute = () => {
   if (webrtc.localStream) {
     const audioTrack = webrtc.localStream.getAudioTracks()[0]
@@ -89,7 +84,7 @@ const toggleVideo = () => {
 
 const endCall = () => {
   webrtc.disconnect()
-  router.push('/discover')
+  router.replace('/discover')
 }
 
 // Format helpers
