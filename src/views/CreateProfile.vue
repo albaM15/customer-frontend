@@ -6,8 +6,10 @@ import AuthLayout from './AuthLayout.vue'
 import { languages } from '../constants/Languages'
 import { countries } from '../constants/Countries'
 import { CreateUserSchema } from '../schemas/CreateUser'
+import { useProfileStore } from '../stores/profile'
 
 const router = useRouter()
+const profileStore = useProfileStore()
 
 const name = ref('')
 const nativeLanguage = ref('')
@@ -41,6 +43,7 @@ const handleCreateProfile = async () => {
 
       const session = await fetchAuthSession()
       const token = session.tokens?.idToken?.toString() || session.tokens?.accessToken?.toString()
+      const cognitoSub = session.tokens?.idToken?.payload?.sub
 
       const response = await fetch(`${API_URL}/users/profile`, {
         method: 'POST',
@@ -61,7 +64,18 @@ const handleCreateProfile = async () => {
         throw new Error('Failed to create profile')
       }
 
-      router.push('/discover')
+      const createdProfile = await response.json().catch(() => ({}))
+      profileStore.setProfile({
+        ...createdProfile,
+        userId: createdProfile.userId || `usr_${cognitoSub || crypto.randomUUID()}`,
+        name: createdProfile.name || name.value,
+        nativeLanguage: createdProfile.nativeLanguage || nativeLanguage.value,
+        targetLanguage: createdProfile.targetLanguage || targetLanguage.value,
+        gender: createdProfile.gender || gender.value,
+        location: createdProfile.location || location.value,
+      })
+
+      router.replace('/discover')
     } catch (error) {
       console.error('Error creating profile:', error)
       errorMessage.value = error.message || 'Error creating profile. Please try again.'

@@ -18,13 +18,13 @@ const checkProfileAndRedirect = async () => {
   try {
     const profile = await profileStore.loadProfile()
     if (profile) {
-      router.push('/discover')
+      router.replace('/discover')
     } else {
-      router.push('/create-profile')
+      router.replace('/create-profile')
     }
   } catch (error) {
     console.error('Error fetching user profile:', error)
-    router.push('/create-profile')
+    router.replace('/create-profile')
   }
 }
 
@@ -37,7 +37,7 @@ const handleSignIn = async () => {
       // Clear any previous guest session before signing in
       profileStore.clearProfile()
 
-      const { isSignedIn, nextStep } = await signIn({
+      const { isSignedIn } = await signIn({
         username: email.value,
         password: password.value,
       })

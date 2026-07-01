@@ -2,9 +2,11 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AuthLayout from './AuthLayout.vue'
+import { useProfileStore } from '../stores/profile'
 import { languages } from '../constants/Languages'
 
 const router = useRouter()
+const profileStore = useProfileStore()
 
 const guestName = ref('')
 const nativeLanguage = ref('')
@@ -22,7 +24,8 @@ const handleGuestSubmit = () => {
     }
     
     localStorage.setItem('guestProfile', JSON.stringify(guestProfile))
-    router.push('/discover')
+    profileStore.setProfile(guestProfile)
+    router.replace('/discover')
   }
 }
 </script>

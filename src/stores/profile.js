@@ -73,11 +73,18 @@ export const useProfileStore = defineStore('profile', () => {
     localStorage.removeItem('guestProfile')
   }
 
+  const setProfile = (nextProfile) => {
+    profile.value = nextProfile
+    isLoaded.value = true
+    error.value = null
+  }
+
   return {
     profile,
     isLoaded,
     error,
     loadProfile,
     clearProfile,
+    setProfile,
   }
 })

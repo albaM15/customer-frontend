@@ -1,5 +1,7 @@
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
+defineOptions({ name: 'HomeView' })
+
+import { onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import BottomNav from '../components/BottomNav.vue'
 import { useWebRTCStore } from '../stores/webrtc'
@@ -18,11 +20,11 @@ onMounted(async () => {
     if (profileStore.profile?.userId) {
       socketClient.connect(profileStore.profile.userId)
     } else {
-      router.push('/')
+      router.replace('/')
     }
   } catch (error) {
     console.error('Error in Home:', error)
-    router.push('/')
+    router.replace('/')
   }
 })
 
@@ -37,11 +39,6 @@ const getLanguageName = (id) => {
   if (!id || id === 'any') return 'Cualquiera'
   const lang = languages.find(l => l.id === id || l.id.toLowerCase() === id.toLowerCase() || l.language.toLowerCase() === id.toLowerCase())
   return lang ? lang.language : id
-}
-
-const getLanguageCode = (id) => {
-  if (!id || id === 'any') return 'ANY'
-  return id.toUpperCase()
 }
 
 const getCountryName = (id) => {
