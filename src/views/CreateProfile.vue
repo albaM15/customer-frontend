@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { fetchAuthSession } from 'aws-amplify/auth'
 import AuthLayout from './AuthLayout.vue'
 import { languages } from '../constants/Languages'
@@ -9,9 +9,10 @@ import { CreateUserSchema } from '../schemas/CreateUser'
 import { useProfileStore } from '../stores/profile'
 
 const router = useRouter()
+const route = useRoute()
 const profileStore = useProfileStore()
 
-const name = ref('')
+const name = ref(route.query.name || '')
 const nativeLanguage = ref('')
 const targetLanguage = ref('')
 const gender = ref('')
@@ -74,6 +75,13 @@ const handleCreateProfile = async () => {
         gender: createdProfile.gender || gender.value,
         location: createdProfile.location || location.value,
       })
+
+      const pendingNames = JSON.parse(localStorage.getItem('pendingProfileNames') || '{}')
+      const profileEmail = session.tokens?.idToken?.payload?.email
+      if (profileEmail && pendingNames[profileEmail]) {
+        delete pendingNames[profileEmail]
+        localStorage.setItem('pendingProfileNames', JSON.stringify(pendingNames))
+      }
 
       router.replace('/discover')
     } catch (error) {
@@ -280,6 +288,10 @@ const handleCreateProfile = async () => {
   align-items: center;
   justify-content: center;
   pointer-events: none;
+}
+
+input[type='text'] {
+  padding-left: 44px;
 }
 
 .select-input {

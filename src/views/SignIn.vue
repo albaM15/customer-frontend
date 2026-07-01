@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { signIn } from 'aws-amplify/auth'
+import { fetchUserAttributes, signIn } from 'aws-amplify/auth'
 import AuthLayout from './AuthLayout.vue'
 import { useProfileStore } from '../stores/profile'
 
@@ -14,17 +14,30 @@ const errorMessage = ref('')
 const isSubmitting = ref(false)
 const showPassword = ref(false)
 
+const getPendingProfileName = () => {
+  const pendingNames = JSON.parse(localStorage.getItem('pendingProfileNames') || '{}')
+  return pendingNames[email.value] || ''
+}
+
+const getProfileName = async () => {
+  const pendingName = getPendingProfileName()
+  if (pendingName) return pendingName
+
+  const attributes = await fetchUserAttributes().catch(() => ({}))
+  return attributes.name || ''
+}
+
 const checkProfileAndRedirect = async () => {
   try {
     const profile = await profileStore.loadProfile()
     if (profile) {
       router.replace('/discover')
     } else {
-      router.replace('/create-profile')
+      router.replace({ path: '/create-profile', query: { name: await getProfileName() } })
     }
   } catch (error) {
     console.error('Error fetching user profile:', error)
-    router.replace('/create-profile')
+    router.replace({ path: '/create-profile', query: { name: await getProfileName() } })
   }
 }
 

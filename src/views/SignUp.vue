@@ -14,6 +14,12 @@ const showPassword = ref(false)
 const errorMessage = ref('')
 const isSubmitting = ref(false)
 
+const savePendingProfileName = () => {
+  const pendingNames = JSON.parse(localStorage.getItem('pendingProfileNames') || '{}')
+  pendingNames[email.value] = fullName.value
+  localStorage.setItem('pendingProfileNames', JSON.stringify(pendingNames))
+}
+
 const handleSignUp = async () => {
   if (
     fullName.value &&
@@ -30,13 +36,15 @@ const handleSignUp = async () => {
         name: fullName.value, // Cognito standard attribute for full name
       }
 
-      const { isSignUpComplete, nextStep } = await signUp({
+      await signUp({
         username: email.value,
         password: password.value,
         options: {
           userAttributes,
         },
       })
+
+      savePendingProfileName()
 
       // Navigate to verify code passing the email
       router.push({ path: '/verify-code', query: { email: email.value } })
